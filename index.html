@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYSC FAQ Chatbot</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f7f4;color:#173b2d}
+.header{background:linear-gradient(135deg,#0b7a4b,#6dbb45);color:white;padding:24px 18px;text-align:center}
+.header h1{margin:0 0 8px;font-size:28px}.header p{margin:0;opacity:.95}
+.app{max-width:900px;margin:22px auto;padding:0 14px}
+.card{background:white;border-radius:18px;box-shadow:0 6px 20px rgba(0,0,0,.08);overflow:hidden}
+.chat{height:470px;overflow-y:auto;padding:18px}
+.msg{max-width:82%;padding:12px 14px;border-radius:15px;margin:10px 0;line-height:1.5}
+.bot{background:#edf5ef;border-bottom-left-radius:4px}.user{background:#0b7a4b;color:white;margin-left:auto;border-bottom-right-radius:4px}
+.quick{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #e5ece7}
+.quick button,.send{border:0;border-radius:20px;padding:9px 12px;cursor:pointer}
+.quick button{background:#e7f2e9;color:#12623f}.quick button:hover{background:#d7eadb}
+.inputrow{display:flex;gap:8px;padding:14px;border-top:1px solid #e5ece7}.inputrow input{flex:1;padding:13px;border:1px solid #ccd8d0;border-radius:12px;font-size:15px}.send{background:#0b7a4b;color:white;padding:0 20px}
+.footer{font-size:12px;color:#60766b;text-align:center;padding:14px}
+a{color:#0b7a4b}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>NYSC FAQ Chatbot</h1>
+  <p>A simple AI/ML learning project for answering common NYSC questions</p>
+</div>
+
+<div class="app">
+<div class="card">
+  <div id="chat" class="chat">
+    <div class="msg bot"><b>Hello!</b> I am the NYSC FAQ Chatbot. Ask me a question about registration, call-up, orientation camp, PPA, CDS, relocation, exemption or other common NYSC topics.</div>
+  </div>
+  <div class="quick">
+    <button onclick="ask('What is NYSC?')">What is NYSC?</button>
+    <button onclick="ask('How do I register?')">Registration</button>
+    <button onclick="ask('What is PPA?')">What is PPA?</button>
+    <button onclick="ask('What is CDS?')">What is CDS?</button>
+    <button onclick="ask('Can I apply for relocation?')">Relocation</button>
+    <button onclick="ask('What is an exemption letter?')">Exemption</button>
+  </div>
+  <div class="inputrow">
+    <input id="input" placeholder="Type your NYSC question..." onkeydown="if(event.key==='Enter')send()">
+    <button class="send" onclick="send()">Send</button>
+  </div>
+</div>
+<div class="footer">
+  Information is for educational use. Always confirm current requirements and announcements on the
+  <a href="https://www.nysc.gov.ng/" target="_blank" rel="noopener">official NYSC website</a>.
+</div>
+</div>
+
+<script>
+const faqs = [
+ {keys:['what is nysc','meaning of nysc','about nysc'], answer:'NYSC means National Youth Service Corps. It is the national service scheme established for eligible Nigerian graduates. The official NYSC website provides current information about mobilisation, registration and service.'},
+ {keys:['register','registration','how do i register','online registration'], answer:'Prospective Corps Members should use the official NYSC registration portal when registration opens and follow the current instructions. Registration requirements and procedures can change, so check the official NYSC website before submitting information.'},
+ {keys:['call-up','call up','callup','call-up number'], answer:'A call-up instrument/letter is used to notify a prospective Corps Member about mobilisation and deployment details. Your NYSC dashboard and official NYSC announcements should be used for current call-up information.'},
+ {keys:['orientation camp','camp','what happens at camp'], answer:'The Orientation Course is part of the NYSC service year. Corps Members receive orientation and training before proceeding to their Place of Primary Assignment (PPA). Check official NYSC instructions for your specific camp and reporting requirements.'},
+ {keys:['ppa','place of primary assignment'], answer:'PPA means Place of Primary Assignment. It is where a Corps Member is posted to carry out assigned service after the orientation stage.'},
+ {keys:['cds','community development service'], answer:'CDS means Community Development Service. It is one of the major parts of the NYSC programme through which Corps Members contribute to their host communities.'},
+ {keys:['relocation','redeployment','reposting'], answer:'NYSC provides procedures for relocation/redeployment in specified circumstances. The official NYSC FAQ states that a relocation application can be available through the prospective/corps member dashboard, subject to the applicable rules.'},
+ {keys:['exemption letter','exemption'], answer:'Some graduates may be issued an Exemption Certificate instead of serving, depending on the applicable NYSC rules. Always check the current official NYSC guidance for eligibility and collection procedures.'},
+ {keys:['part time','part-time'], answer:'The official NYSC FAQ states that part-time graduates are to register when the portal opens so they can print their Exclusion Letter from their dashboard.'},
+ {keys:['one year','service year','how long'], answer:'The NYSC enabling law provides for a continuous period of one year of national service for persons called up, subject to applicable provisions and exemptions.'},
+ {keys:['documents','requirements'], answer:'Required documents can differ depending on whether a graduate is locally or foreign trained and on current NYSC instructions. Check the official registration guidance before uploading or submitting documents.'},
+ {keys:['where can i verify','official website','official source'], answer:'For current NYSC information, use https://www.nysc.gov.ng/ and the relevant NYSC portal/service pages linked from the official website.'}
+];
+
+function normalize(s){return s.toLowerCase().replace(/[^\w\s-]/g,' ').replace(/\s+/g,' ').trim();}
+function getAnswer(q){
+  const n=normalize(q);
+  let best=null, score=0;
+  for(const f of faqs){
+    let s=0;
+    for(const k of f.keys){ if(n.includes(normalize(k))) s += normalize(k).length; }
+    if(s>score){score=s;best=f.answer;}
+  }
+  if(best) return best;
+  return "I don't have a verified answer for that question in my FAQ knowledge base. Please check the official NYSC website for the latest information: https://www.nysc.gov.ng/";
+}
+function add(text, cls){
+  const div=document.createElement('div'); div.className='msg '+cls; div.innerHTML=text.replace(/\n/g,'<br>');
+  document.getElementById('chat').appendChild(div);
+  document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight;
+}
+function ask(q){add(q,'user'); setTimeout(()=>add(getAnswer(q),'bot'),250);}
+function send(){
+  const el=document.getElementById('input'); const q=el.value.trim(); if(!q)return;
+  el.value=''; ask(q);
+}
+</script>
+</body>
+</html>
